@@ -9,7 +9,7 @@ import android.os.*
 import androidx.compose.runtime.*
 
 
-internal data class RunState(val active: Boolean = false, val status: String = "Ready", val bpm: Int? = null)
+internal data class RunState(val active: Boolean = false, val status: String = "Ready", val bpm: Int? = null, val zone: Int? = null)
 internal object Session { var state by mutableStateOf(RunState()) }
 internal fun Context.sensorPrefs() = getSharedPreferences("sensor", Context.MODE_PRIVATE)
 
@@ -26,13 +26,16 @@ class RunService : Service() {
     private var address = ""
     private var label = ""
     private lateinit var voice: Speaker
-    private var cadence = Readout()
+    private lateinit var options: RunOptions
+    private lateinit var cadence: Readout
     private var lastSample = 0L
     private var saved = false
     private var heardSignal = false
 
     override fun onCreate() {
         super.onCreate()
+        options = loadOptions()
+        cadence = Readout(options)
         link = SessionHardware.sensor(this, ::sample, ::retry)
         voice = SessionHardware.speaker(this)
         val channel = NotificationChannel("run", "Run session", NotificationManager.IMPORTANCE_LOW)
@@ -73,14 +76,14 @@ class RunService : Service() {
         link.close()
         if (heardSignal) voice.say("Heart rate signal lost.")
         heardSignal = false
-        cadence = Readout()
+        cadence = Readout(options)
         Session.state = RunState(true, "Looking for $label")
         handler.postDelayed({ connect() }, 3_000)
     }
 
     private fun sample(bpm: Int) {
         val now = SessionHardware.now()
-        if (heardSignal && now - lastSample >= 10_000) cadence = Readout()
+        if (heardSignal && now - lastSample >= 10_000) cadence = Readout(options)
         lastSample = now
         handler.removeCallbacks(timeout)
         handler.postDelayed(timeout, 10_000)
@@ -89,7 +92,7 @@ class RunService : Service() {
             saved = true
         }
         heardSignal = true
-        Session.state = RunState(true, if (voice.failed) "Connected · speech unavailable" else "Connected to $label", bpm)
+        Session.state = RunState(true, if (voice.failed) "Connected · speech unavailable" else "Connected to $label", bpm, options.zone(bpm))
         cadence.phrase(bpm, now)?.let(voice::say)
     }
 

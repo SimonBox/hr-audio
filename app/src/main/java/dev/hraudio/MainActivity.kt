@@ -54,8 +54,14 @@ class MainActivity : ComponentActivity() {
             val address = prefs.getString("address", null)
             val saved = address?.let { Sensor(it, prefs.getString("label", null) ?: "Heart-rate sensor") }
             val run = Session.state
+            var settings by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
             MaterialTheme {
+                if (settings && !run.active) {
+                    SettingsScreen(loadOptions(), ::saveOptions) { settings = false }
+                    return@MaterialTheme
+                }
                 RunScreen(run, saved, scanning, nearby, message,
+                    settings = { stopScan(); settings = true },
                     find = { withBluetooth { findSensors() } },
                     start = { sensor -> withBluetooth { start(sensor) } },
                     stop = { stopService(Intent(this, RunService::class.java)) },
@@ -116,12 +122,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 internal fun RunScreen(run: RunState, saved: Sensor?, scanning: Boolean, devices: List<Sensor>,
-                      message: String, find: () -> Unit, start: (Sensor) -> Unit, stop: () -> Unit, test: () -> Unit) {
+                      message: String, settings: () -> Unit, find: () -> Unit, start: (Sensor) -> Unit, stop: () -> Unit, test: () -> Unit) {
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text("HR Audio", style = MaterialTheme.typography.headlineMedium)
             Text(run.bpm?.let { "$it BPM" } ?: "— BPM", style = MaterialTheme.typography.displayLarge)
+            run.zone?.let { Text(zoneName(it), style = MaterialTheme.typography.titleLarge) }
             Text(if (run.active) run.status else saved?.let { "Saved sensor · ${it.label}" } ?: "Choose a heart-rate sensor to begin.")
             if (run.active) {
                 Button(onClick = stop) { Text("Stop") }
@@ -134,6 +141,7 @@ internal fun RunScreen(run: RunState, saved: Sensor?, scanning: Boolean, devices
                     OutlinedButton(onClick = { start(sensor) }) { Text("${sensor.label} · ${sensor.address}") }
                 }
                 TextButton(onClick = test) { Text("Test voice") }
+                TextButton(onClick = settings) { Text("Settings") }
                 if (message.isNotEmpty()) Text(message)
             }
         }
