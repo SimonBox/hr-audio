@@ -1,7 +1,6 @@
 package dev.hraudio
 
 import android.Manifest
-import android.content.Context
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,6 +16,7 @@ class RunFlowTest {
 
     @Test fun savedSensorRunAnnouncesReconnectsAndStops() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val previousOptions = context.loadOptions()
         val originalSensor = SessionHardware.sensor
         val originalSpeaker = SessionHardware.speaker
         val originalClock = SessionHardware.now
@@ -31,6 +31,7 @@ class RunFlowTest {
         var open = false
         try {
             screen.runOnIdle {
+                context.saveOptions(RunOptions())
                 prefs.edit().putString("address", "02:00:00:00:00:01").putString("label", "Test strap").commit()
                 SessionHardware.now = { time }
                 SessionHardware.sensor = { _, receive, disconnect ->
@@ -52,20 +53,37 @@ class RunFlowTest {
                 } }
             }
             screen.activityRule.scenario.recreate()
+            screen.onNodeWithText("Settings").performClick()
+            listOf(90, 110, 130, 150, 170).forEachIndexed { index, bpm ->
+                screen.onNode(hasSetTextAction() and hasText("Zone ${index + 1} start"))
+                    .performScrollTo().performTextReplacement(bpm.toString())
+            }
+            screen.onNode(hasSetTextAction() and hasText("BPM readout interval (seconds)"))
+                .performScrollTo().performTextReplacement("15")
+            screen.onNodeWithText("Done").performScrollTo().performClick()
+            screen.activityRule.scenario.recreate()
+            screen.runOnIdle {
+                assertEquals(RunOptions(listOf(90, 110, 130, 150, 170), 15), context.loadOptions())
+            }
             screen.onNodeWithText("Start").performClick()
             screen.waitUntil(5_000) { opens == 1 }
             screen.runOnIdle {
                 sample(118)
-                repeat(60) { time += 1_000; sample(134) }
+                repeat(4) { time += 1_000; sample(118) }
+                repeat(11) { time += 1_000; sample(134) }
             }
+            screen.onNodeWithText("Zone 3").assertIsDisplayed()
             screen.onNodeWithText("134 BPM").assertIsDisplayed()
             screen.runOnIdle {
-                assertEquals(listOf("Sensor connected. 118 beats per minute.", "134 beats per minute."), phrases)
+                assertEquals(listOf("Sensor connected. 118 beats per minute.", "Up to zone 3, 134 beats per minute."), phrases)
+                time += 1_000
+                sample(150)
                 lost()
             }
             screen.onNodeWithText("— BPM").assertIsDisplayed()
             screen.waitUntil(8_000) { opens == 2 }
             screen.runOnIdle {
+                time += 15_000
                 sample(129)
                 assertEquals(listOf("Heart rate signal lost.", "Sensor connected. 129 beats per minute."), phrases.takeLast(2))
             }
@@ -75,6 +93,7 @@ class RunFlowTest {
         } finally {
             screen.runOnIdle {
                 context.stopService(android.content.Intent(context, RunService::class.java))
+                context.saveOptions(previousOptions)
                 SessionHardware.sensor = originalSensor
                 SessionHardware.speaker = originalSpeaker
                 SessionHardware.now = originalClock
