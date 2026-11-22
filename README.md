@@ -1,8 +1,27 @@
 # HR Audio
 
-Hear your heart rate through your earbuds while Strava records your run. This first Android build is a hardware trial for a WHOOP strap (or another sensor advertising the standard Bluetooth Heart Rate Service), your phone, and your usual audio device.
+Hear your heart rate through your earbuds while Strava records your run. Use a WHOOP strap or another sensor advertising the standard Bluetooth Heart Rate Service. HR Audio speaks periodic BPM readings and sustained zone changes while the phone is locked.
 
-The first fresh reading triggers “Sensor connected. 118 beats per minute.” During the session, the next fresh reading at or after each 60-second interval triggers a BPM update. After signal loss the app clears the reading and tries the saved device again. Tap **Stop** in the app or its ongoing notification to finish.
+The first fresh reading triggers “Sensor connected. 118 beats per minute.” During the session, the next fresh reading at or after each configured interval (60 seconds by default) triggers a BPM update. After signal loss the app clears the reading and tries the saved device again. Tap **Stop** in the app or its ongoing notification to finish.
+
+## Update an existing install
+
+In the same clone you used for version 0.1, run `git pull --ff-only`. Connect your phone and click **Run** in Android Studio, or run `./gradlew installDebug`. Using the same application ID and signing key updates the installed app in place and preserves your saved strap. If Android reports a signature mismatch, rebuild from the same computer and debug keystore you used for the first install.
+
+## Set your zones and audio
+
+Before starting a session, open **Settings**. Copy the five starting BPM values from your WHOOP zones. If zone 3 starts at 140 and zone 4 at 155, the app displays zone 3 as 140–154. Below your first boundary the run screen shows **Below zone 1**. Leave all five fields blank for BPM-only use.
+
+Set **BPM readout interval** in seconds, or enter **0** to turn off periodic BPM. **Speak zone changes** controls transition cues independently. A valid set saves on the phone and applies to the next run. Your strap and the initial connection announcement work as before.
+
+During a run, the screen shows the zone of the latest reading. Speech waits for 10 continuous seconds of readings in the new zone. A brief crossing or a return to the previous zone cancels the pending cue. When a periodic reading and a zone cue coincide, you hear one phrase, such as “Up to zone four, 156 beats per minute.”
+
+## Test the zone update
+
+1. Enter your five boundaries, set a short readout interval (e.g., 20 seconds), and tap **Done**. Reopen Settings to check the values.
+2. Start Strava and HR Audio as usual. During a walk or your normal run, listen as BPM crosses a boundary. For an easy test, temporarily place a boundary near your walking BPM. Restore your personal boundaries afterwards.
+3. Check that a brief crossing stays quiet, a sustained rise produces one upward cue, and a sustained fall produces one downward cue. Repeat with the phone locked.
+4. Stop, change the interval to **0**, and restart. The initial BPM and sustained zone cues should still speak. Restore your preferred cadence when done.
 
 ## Build from source
 
@@ -52,6 +71,6 @@ If you already have the debug APK, enable USB debugging as above and run `adb in
 
 ## Project status
 
-This build uses a fixed one-minute cadence. Configurable cadence, five saved zone boundaries, and spoken upward and downward zone transitions are planned after the hardware trial. HR Audio stores the selected sensor locally. It does not request location or internet access or record a workout history.
+The version 0.1 field trial passed on the tester’s phone with a WHOOP strap, Strava, earbuds, music and a locked screen. Strava retained the heart-rate trace and the saved strap reconnected after restart. Version 0.2 adds zone announcements and configurable cadence for the next field trial.
 
-See the [developer guide](docs/DEVELOPMENT.md) for architecture, tests and the agreed next milestone.
+See the [developer guide](docs/DEVELOPMENT.md) for architecture and tests.
