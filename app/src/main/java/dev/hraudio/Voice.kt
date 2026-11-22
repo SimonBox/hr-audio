@@ -9,7 +9,13 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
 
-internal class Voice(context: Context) {
+internal interface Speaker {
+    val failed: Boolean
+    fun say(text: String)
+    fun close()
+}
+
+internal class Voice(context: Context) : Speaker {
     private val main = Handler(Looper.getMainLooper())
     private val audio = context.getSystemService(AudioManager::class.java)
     private val attributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -22,7 +28,7 @@ internal class Voice(context: Context) {
     private var sequence = 0
     private var pending: Pair<String, Long>? = null
     private var ready = false
-    var failed = false
+    override var failed = false
         private set
     private var closed = false
     private var engine: TextToSpeech? = null
@@ -48,7 +54,7 @@ internal class Voice(context: Context) {
         }
     }
 
-    fun say(text: String) {
+    override fun say(text: String) {
         if (!ready) { pending = text to SystemClock.elapsedRealtime(); return }
         if (audio.requestAudioFocus(focus) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
         val id = (++sequence).toString()
@@ -61,7 +67,7 @@ internal class Voice(context: Context) {
         if (currentId != null) audio.abandonAudioFocusRequest(focus)
         currentId = null
     }
-    fun close() {
+    override fun close() {
         closed = true
         engine?.stop()
         engine?.shutdown()
