@@ -1,0 +1,10 @@
+<!-- SPDX-License-Identifier: MIT -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M26,54 L26,51 C26,35.5 38.5,24 54,24 C69.5,24 82,35.5 82,51 L82,54" android:strokeColor="#BDF5E9"
+        android:strokeWidth="3.6" android:strokeLineCap="round" />
+    <path android:pathData="M28,49 C25.2,49 23,51.2 23,54 L23,60 C23,63 25.2,65 28,65 L30,65 Q32,65 32,63 L32,51 Q32,49 30,49 Z M80,49 C82.8,49 85,51.2 85,54 L85,60 C85,63 82.8,65 80,65 L78,65 Q76,65 76,63 L76,51 Q76,49 78,49 Z" android:fillColor="#BDF5E9" />
+    <path android:pathData="M54,44 C48,36 39,37 35.5,44 C31.5,52 35.5,60 42,67 L52.5,77 Q54,78.5 55.5,77 L66,67 C72.5,60 76.5,52 72.5,44 C69,37 60,36 54,44 Z M39,54.5 H46.5 L50.3,46 Q51.1,44.4 52,46.1 L56.9,59.4 L59.5,54.9 Q59.9,54.2 60.8,54.2 H68 Q69.7,54.2 69.7,55.9 Q69.7,57.6 68,57.6 H62 L57.4,65.1 Q56.5,66.6 55.7,64.8 L50.9,51.8 L48.6,57 Q48.2,57.9 47.3,57.9 H39 Q37.3,57.9 37.3,56.2 Q37.3,54.5 39,54.5 Z"
+        android:fillType="evenOdd" android:fillColor="#FF786F" />
+</vector>
