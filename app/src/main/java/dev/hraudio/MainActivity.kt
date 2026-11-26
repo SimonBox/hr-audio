@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 @file:Suppress("MissingPermission")
 package dev.hraudio
 

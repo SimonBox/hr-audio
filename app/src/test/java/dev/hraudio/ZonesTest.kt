@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package dev.hraudio
 
 import org.junit.Assert.*

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package dev.hraudio
 
 /** Bluetooth SIG Heart Rate Measurement. Bit 0 selects the width of the LE value. */

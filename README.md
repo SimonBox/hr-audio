@@ -74,3 +74,7 @@ If you already have the debug APK, enable USB debugging as above and run `adb in
 The version 0.1 field trial passed on the tester’s phone with a WHOOP strap, Strava, earbuds, music and a locked screen. Strava retained the heart-rate trace and the saved strap reconnected after restart. Version 0.2 adds zone announcements and configurable cadence for the next field trial.
 
 See the [developer guide](docs/DEVELOPMENT.md) for architecture and tests.
+
+## License
+
+HR Audio is distributed under the [MIT License](LICENSE). The bundled Gradle wrapper retains its upstream license.
